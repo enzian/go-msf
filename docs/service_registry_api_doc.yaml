@@ -1,0 +1,232 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Service Directory API
+  description: Describes the API to access and receive information from the Service Directory
+  version: "0.1.0"
+# the domain of the service
+host: servicedirectory.lst.internal
+# array of all schemes that your API supports
+schemes:
+  - http
+  - https
+
+# will be prefixed to all paths
+basePath: /api/v1/
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /services:
+    get:
+      summary: Registered Services
+      description: The Services endpoint returns a list of all services currently registered in the directory
+
+      tags:
+        - Services
+      responses:
+        200:
+          description: An array of service definitions
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ServiceDefinition'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: create a new service definition
+      description: the endpoint creates a new service definition
+      parameters:
+        - name: body
+          in: body
+          description: new service definition
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceDefinition'
+      consumes:
+        - application/json
+      tags:
+        - Services
+      responses:
+        200:
+          description: Service definition was successfully added
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /services/{service}:
+    delete:
+      summary: Registered Services
+      description: The Services endpoint returns a list of all services currently registered in the directory
+      parameters:
+        - name: service
+          in: path
+          description: Identifier code of the desired service defintion.
+          required: true
+          type: string
+      tags:
+        - Services
+      responses:
+        200:
+          description: An array of service definitions
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ServiceDefinition'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /services/{service}/versions:
+    get:
+      summary: return the specified service versions
+      description: The Services endpoint returns a list of all services currently registered in the directory
+      parameters:
+        - name: service
+          in: path
+          description: Identifier code of the desired service defintion.
+          required: true
+          type: string
+      tags:
+        - Versions
+      produces:
+        - application/json
+      responses:
+        200:
+          description: An array of service definitions
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ServiceVersion'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: add a new revision of the service
+      parameters:
+        - name: service
+          in: path
+          description: Identifier code of the desired service defintion.
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: new service version
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceVersion'
+      consumes:
+        - application/json
+      responses:
+        200:
+          description: the version was registered successfully
+        604:
+          description: API error message
+          schema:
+            $ref: '#/definitions/Error'
+  /services/{service}/versions/{version}/hosts/:
+    get:
+      summary: returnes a list of hosts for a given service and version
+      parameters:
+          - name: service
+            in: path
+            description: Identifier code of the desired service defintion.
+            required: true
+            type: string
+          - name: version
+            in: path
+            description: semantic version of the service
+            required: true
+            type: string
+      tags:
+        - Hosts
+      produces:
+        - application/json
+      responses:
+        200:
+          description: an array of hosts providing the desired service in the given version
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ServiceHost'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: add a new revision of the service
+      parameters:
+        - name: service
+          in: path
+          description: Identifier code of the desired service defintion.
+          required: true
+          type: string
+        - name: version
+          in: path
+          description: semantic version of the service
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: new service host
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceHost'
+      tags:
+        - Hosts
+      consumes:
+        - application/json
+      responses:
+        200:
+          description: the host was successfully added to the list
+        604:
+          description: API error message
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  ServiceDefinition:
+    properties:
+      identifier:
+        type: string
+        description: unique identifier for this service definition
+      displayName:
+        type: string
+        description: display friendly name for the service
+      uriprefix:
+        type: string
+        description: the prefix to look for in the uri for this service
+      headversion:
+        type: string
+        description: the most recent version of this service
+  ServiceVersion:
+    properties:
+      version:
+        type: string
+        description: semantic version string.
+  Error:
+    properties:
+      developerMessage:
+        type: string
+        description: Position in pagination.
+      userMessage:
+        type: string
+        description: Number of items to retrieve (100 max).
+      errorCode:
+        type: string
+        description: Total number of items available.
+      moreInfo:
+        type: string
+        description: Total number of items available.a
+  ServiceHost:
+    properties:
+      uri:
+        type: string
+        description: URI where the service can be reached.
+      state:
+        type: string
+        description: the state of the host (active, phaseout, inactive)

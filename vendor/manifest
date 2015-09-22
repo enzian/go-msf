@@ -1,0 +1,47 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/ahmetalpbalkan/go-linq",
+			"repository": "https://github.com/ahmetalpbalkan/go-linq",
+			"revision": "32a9c2bd73213b024e8bd5a687927eaf9bdfe0b9",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/codegangsta/cli",
+			"repository": "https://github.com/codegangsta/cli",
+			"revision": "a65b733b303f0055f8d324d805f393cd3e7a7904",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/codegangsta/inject",
+			"repository": "https://github.com/codegangsta/inject",
+			"revision": "33e0aa1cb7c019ccc3fbe049a8262a6403d30504",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/go-martini/martini",
+			"repository": "https://github.com/go-martini/martini",
+			"revision": "3fed8be780088e20519cdebf952af0d220e42c9c",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/martini-contrib/binding",
+			"repository": "https://github.com/martini-contrib/binding",
+			"revision": "8aaceec3b52c275477f32c95ea5c6e8ccaba04c5",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/martini-contrib/render",
+			"repository": "https://github.com/martini-contrib/render",
+			"revision": "ec18f8345a1181146728238980606fb1d6f40e8c",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/oxtoacart/bpool",
+			"repository": "https://github.com/oxtoacart/bpool",
+			"revision": "4e1c5567d7c2dd59fa4c7c83d34c2f3528b025d6",
+			"branch": "master"
+		}
+	]
+}
