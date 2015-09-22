@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/codegangsta/cli"
+	"github.com/enzian/go-msf/common"
 	"github.com/enzian/go-msf/std-services/api-service"
 	apiadapters "github.com/enzian/go-msf/std-services/api-service/Adapters"
 	"github.com/enzian/go-msf/std-services/registry-service"
@@ -97,7 +98,7 @@ func startCompact(c *cli.Context) {
 	var m = martini.Classic()
 	m.Use(render.Renderer())
 
-	var dirSvc = svcreg.NewServiceRegistryStub()
+	var dirSvc = svcreg.NewServiceRegistryStub(apiSvc.EventChannel)
 	m.Action(dirSvc.Route().Handle)
 
 	http.HandleFunc("/service-directory/", func(w http.ResponseWriter, r *http.Request) {
@@ -160,7 +161,7 @@ func startDirectory(c *cli.Context) {
 	var m = martini.Classic()
 	m.Use(render.Renderer())
 
-	var dirSvc = svcreg.NewServiceRegistryStub()
+	var dirSvc = svcreg.NewServiceRegistryStub(make(chan common.Event))
 	m.Action(dirSvc.Route().Handle)
 
 	http.HandleFunc("/service-directory/", func(w http.ResponseWriter, r *http.Request) {

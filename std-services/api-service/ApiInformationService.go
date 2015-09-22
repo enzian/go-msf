@@ -1,12 +1,16 @@
 package apisrv
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/enzian/go-msf/common"
+)
 
 // APIInformationService keeps and maintains information about the APIs active routes by passing events through projections to the routing cache
 type APIInformationService struct {
 	projectionLines    map[string]([]Projection)
 	routeCache         RouteCache
-	EventChannel       chan Event
+	EventChannel       chan common.Event
 	eventHandlerCancel chan bool
 }
 
@@ -14,7 +18,7 @@ type APIInformationService struct {
 func NewAPIInformationService() (*APIInformationService, error) {
 	var ais = new(APIInformationService)
 	ais.projectionLines = make(map[string]([]Projection))
-	ais.EventChannel = make(chan Event)
+	ais.EventChannel = make(chan common.Event)
 	ais.eventHandlerCancel = make(chan bool)
 	ais.routeCache = RouteCache{}
 	return ais, nil

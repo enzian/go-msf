@@ -7,13 +7,12 @@ import (
 	"net/http"
 
 	"github.com/enzian/go-msf/common"
-	"github.com/enzian/go-msf/std-services/api-service"
 )
 
 // The InitialLoader reads all information from the registry service and publishes messages to populate the caches at startup
 type InitialLoader struct {
 	registryServiceURI string
-	sendEvntChan       chan<- apisrv.Event
+	sendEvntChan       chan<- common.Event
 }
 
 // NewInitialLoader creates and initializes the new loader
@@ -24,7 +23,7 @@ func NewInitialLoader(URI string) InitialLoader {
 }
 
 // Start initializes the loader but does not read any data from the registry service yet.
-func (loader *InitialLoader) Start(sendEventChan chan<- apisrv.Event) {
+func (loader *InitialLoader) Start(sendEventChan chan<- common.Event) {
 	loader.sendEvntChan = sendEventChan
 }
 
@@ -36,7 +35,7 @@ func (loader *InitialLoader) Load() error {
 	}
 
 	for _, svd := range serviceDefinitions {
-		var event = apisrv.Event{
+		var event = common.Event{
 			Action: "SERVICE_ADDED",
 			Data: map[string]string{
 				"prefix": svd.URIPrefix,
@@ -50,7 +49,7 @@ func (loader *InitialLoader) Load() error {
 		return err
 	}
 	for _, apiV := range apiVersion {
-		var event = apisrv.Event{
+		var event = common.Event{
 			Action: "API_VERSION_ADD",
 			Data: map[string]string{
 				"version": apiV.Version,

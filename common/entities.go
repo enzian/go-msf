@@ -45,3 +45,9 @@ type APIError struct {
 	ErrorCode        string `json:"errorCode,omitempty"`
 	MoreInfo         string `json:"moreInfo,omitempty"`
 }
+
+// Event is a structre which represents a change to the route cache in some way.
+type Event struct {
+	Action string
+	Data   map[string]string
+}

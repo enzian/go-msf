@@ -1,6 +1,10 @@
 package apisrv
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/enzian/go-msf/common"
+)
 
 // Directory is used by the handler functions to keep track of the api versions and service prefixes that are needed to create the routing caches
 type Directory struct {
@@ -14,7 +18,7 @@ func NewDirectory() Directory {
 }
 
 // AddServicePrefix adds the service with it's prefix to the directory
-func (dir *Directory) AddServicePrefix(rc RouteCache, evnt Event) (RouteCache, error) {
+func (dir *Directory) AddServicePrefix(rc RouteCache, evnt common.Event) (RouteCache, error) {
 	for _, svc := range dir.servicePrefixes {
 		if evnt.Data["prefix"] == svc {
 			return nil, fmt.Errorf("service with the given prefix already registered")
@@ -27,7 +31,7 @@ func (dir *Directory) AddServicePrefix(rc RouteCache, evnt Event) (RouteCache, e
 }
 
 // AddAPIVersion adds a version to the directory
-func (dir *Directory) AddAPIVersion(rc RouteCache, evnt Event) (RouteCache, error) {
+func (dir *Directory) AddAPIVersion(rc RouteCache, evnt common.Event) (RouteCache, error) {
 	for _, svc := range dir.apiversions {
 		if evnt.Data["version"] == svc {
 			return nil, fmt.Errorf("api with the given version already registered")
@@ -41,16 +45,16 @@ func (dir *Directory) AddAPIVersion(rc RouteCache, evnt Event) (RouteCache, erro
 }
 
 // AddHost adds a host for the given API version and service prefix
-func (dir *Directory) AddHost(rc RouteCache, evnt Event) (RouteCache, error) {
+func (dir *Directory) AddHost(rc RouteCache, evnt common.Event) (RouteCache, error) {
 	fmt.Println("Adding a new Host")
 	fmt.Println(fmt.Sprintf("Versions: %#v", dir.apiversions))
 	fmt.Println(fmt.Sprintf("Service: %#v", dir.servicePrefixes))
 
 	var cacheKey = fmt.Sprintf("%s,%s", evnt.Data["version"], evnt.Data["prefix"])
-	fmt.Println(fmt.Sprintf("Cache is now: %#v", rc))
 	var routes = rc[cacheKey]
 	var newRouteCache = append(routes, evnt.Data["uri"])
 	rc[cacheKey] = newRouteCache
+	fmt.Println(fmt.Sprintf("Cache is now: %#v", rc))
 	fmt.Println("Added new Host")
 	return rc, nil
 }

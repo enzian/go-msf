@@ -13,8 +13,9 @@ import (
 
 // ServiceRegistryService is the service stub for the service registry
 type ServiceRegistryService struct {
-	apiVersions []*common.APIVersion
-	services    []*common.ServiceDefinition
+	apiVersions  []*common.APIVersion
+	services     []*common.ServiceDefinition
+	eventChannel chan<- common.Event
 }
 
 // Route return the route handler for this
@@ -51,10 +52,11 @@ func (s ServiceRegistryService) Route() martini.Router {
 }
 
 // NewServiceRegistryStub returns a new instance of service registry stub
-func NewServiceRegistryStub() ServiceRegistryService {
+func NewServiceRegistryStub(eventChan chan<- common.Event) ServiceRegistryService {
 	return ServiceRegistryService{
-		apiVersions: []*common.APIVersion{},
-		services:    []*common.ServiceDefinition{},
+		apiVersions:  []*common.APIVersion{},
+		services:     []*common.ServiceDefinition{},
+		eventChannel: eventChan,
 	}
 }
 
@@ -135,6 +137,16 @@ func (s *ServiceRegistryService) createAPIService(r render.Render, sv common.Ser
 		return
 	}
 	api.ServiceVersions = append(api.ServiceVersions, svcv.(*common.ServiceVersion))
+
+	defer func() {
+		fmt.Println("Publishing Event: SERVICE_ADDED")
+		s.eventChannel <- common.Event{
+			Action: "SERVICE_ADDED",
+			Data: map[string]string{
+				"prefix": svc.URIPrefix,
+			},
+		}
+	}()
 }
 
 func (s *ServiceRegistryService) createAPIVersion(r render.Render, apiV common.APIVersion) {
@@ -146,7 +158,16 @@ func (s *ServiceRegistryService) createAPIVersion(r render.Render, apiV common.A
 			UserMessage:      "Failed to create new api version",
 		})
 	} else {
+		fmt.Println("Publishing Event: API_VERSION_ADD")
 		s.apiVersions = append(s.apiVersions, &apiV)
+		defer func() {
+			s.eventChannel <- common.Event{
+				Action: "API_VERSION_ADD",
+				Data: map[string]string{
+					"version": apiV.Version,
+				},
+			}
+		}()
 	}
 }
 
@@ -223,7 +244,20 @@ func (s *ServiceRegistryService) attachServiceHost(r render.Render, host common.
 		})
 		return
 	}
+
 	svcv.(*common.ServiceVersion).ServiceHosts = append(svcv.(*common.ServiceVersion).ServiceHosts, host)
+
+	defer func() {
+		fmt.Println("Publishing Event: HOST_ADD")
+		s.eventChannel <- common.Event{
+			Action: "HOST_ADD",
+			Data: map[string]string{
+				"prefix":  svc.URIPrefix,
+				"version": svcv.(*common.ServiceVersion).Version,
+				"uri":     host.URI,
+			},
+		}
+	}()
 }
 
 func (s *ServiceRegistryService) getAPIByVersion(version string) (*common.APIVersion, bool, error) {
