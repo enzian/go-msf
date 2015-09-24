@@ -248,12 +248,21 @@ func (s *ServiceRegistryService) attachServiceHost(r render.Render, host common.
 	svcv.(*common.ServiceVersion).ServiceHosts = append(svcv.(*common.ServiceVersion).ServiceHosts, host)
 
 	defer func() {
+		apiByVersion := func(x linq.T) (bool, error) {
+			var r, e = linq.From(x.(*common.APIVersion).ServiceVersions).AnyWith(func(y linq.T) (bool, error) { return y.(*common.ServiceVersion) == svcv, nil })
+			return r, e
+		}
+		var changedAPI, f, err = linq.From(s.apiVersions).FirstBy(apiByVersion)
+		if err != nil && !f {
+			fmt.Println("Interrupting publish of HOST_ADD.")
+			return
+		}
 		fmt.Println("Publishing Event: HOST_ADD")
 		s.eventChannel <- common.Event{
 			Action: "HOST_ADD",
 			Data: map[string]string{
 				"prefix":  svc.URIPrefix,
-				"version": svcv.(*common.ServiceVersion).Version,
+				"version": changedAPI.(*common.APIVersion).Version,
 				"uri":     host.URI,
 			},
 		}
