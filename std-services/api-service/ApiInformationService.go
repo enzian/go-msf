@@ -2,6 +2,10 @@ package apisrv
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"regexp"
 
 	"github.com/enzian/go-msf/common"
 )
@@ -79,4 +83,34 @@ func (apiSvc *APIInformationService) processEvent() {
 			break
 		}
 	}
+}
+
+// ReqForwarder is the handle function that proxys request to instances in the service cloud according to the route table.
+func (apiSvc *APIInformationService) ReqForwarder(w http.ResponseWriter, r *http.Request) {
+	var routeRegex = regexp.MustCompile(`(?P<domain>.*)\/api\/v(?P<version>(\d*\.)*\d*)\/(?P<prefix>[^\/]*)\/(?P<suffix>.*)`)
+	var reqUrl = r.URL.String()
+	if routeRegex.MatchString(r.URL.String()) {
+		fmt.Println(reqUrl)
+		match := routeRegex.FindStringSubmatch(reqUrl)
+		result := make(map[string]string)
+		for i, name := range routeRegex.SubexpNames() {
+			result[name] = match[i]
+		}
+
+		if result["version"] != "" || result["prefix"] != "" {
+			var key = fmt.Sprintf("%s,%s", result["version"], result["prefix"])
+			var routes = apiSvc.routeCache[key]
+			if len(routes) > 0 {
+				nodeUrl, err := url.ParseRequestURI(fmt.Sprintf("http://%s/%s", routes[0], result["suffix"]))
+				if err == nil {
+					fmt.Println(nodeUrl.String())
+					var client = httputil.NewSingleHostReverseProxy(nodeUrl)
+					client.ServeHTTP(w, r)
+					return
+				}
+			}
+		}
+	}
+
+	http.Error(w, "malformed reqest uri", http.StatusBadRequest)
 }

@@ -93,7 +93,7 @@ func startCompact(c *cli.Context) {
 	}
 	apiSvc.Start()
 
-	http.HandleFunc("/api", myHandler)
+	http.HandleFunc("/api/", apiSvc.ReqForwarder)
 
 	var m = martini.Classic()
 	m.Use(render.Renderer())
@@ -120,14 +120,6 @@ func startCompact(c *cli.Context) {
 	exitChan := make(chan os.Signal, 1)
 	signal.Notify(exitChan, os.Interrupt)
 	<-exitChan
-}
-
-func myHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("MyHandler Called")
-}
-
-func mySecHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("MySecHandler Called")
 }
 
 func startAPI(c *cli.Context) {
