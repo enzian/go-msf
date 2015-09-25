@@ -72,20 +72,22 @@ func (s *ServiceRegistryService) getServiceVersions(r render.Render, parms marti
 	r.JSON(http.StatusOK, svc.ServiceVersions)
 }
 
-func (s *ServiceRegistryService) createServiceVersion(r render.Render, sv common.ServiceVersion, parms martini.Params) {
+func (s *ServiceRegistryService) createServiceVersion(r render.Render, sv common.ServiceVersion, parms martini.Params) int {
 	svc, found, err := s.getServiceByIdentifer(parms["service"])
 	if !found || err != nil {
 		r.JSON(http.StatusNotFound, common.APIError{
 			DeveloperMessage: fmt.Sprintf("Cannot find service %s", parms["service"]),
 			UserMessage:      "Failed to find the service specified",
 		})
-		return
+		return http.StatusNotFound
 	}
 	var newServiceVersion = new(common.ServiceVersion)
 	newServiceVersion.ServiceIdentifier = svc.Identifier
 	newServiceVersion.Version = sv.Version
 	newServiceVersion.ServiceHosts = []common.ServiceHost{}
 	svc.ServiceVersions = append(svc.ServiceVersions, newServiceVersion)
+
+	return http.StatusOK
 }
 
 func (s *ServiceRegistryService) getAPIVersion(r render.Render, parms martini.Params) {
@@ -108,14 +110,14 @@ func (s *ServiceRegistryService) getAPIServices(r render.Render, parms martini.P
 	}
 }
 
-func (s *ServiceRegistryService) createAPIService(r render.Render, sv common.ServiceVersion, parms martini.Params) {
+func (s *ServiceRegistryService) createAPIService(r render.Render, sv common.ServiceVersion, parms martini.Params) int {
 	var api, found, err = s.getAPIByVersion(parms["version"])
 	if !found || err != nil {
 		r.JSON(http.StatusNotFound, common.APIError{
 			DeveloperMessage: fmt.Sprintf("Cannot find api version %s", parms["version"]),
 			UserMessage:      "Failed to find matching api version",
 		})
-		return
+		return http.StatusNotFound
 	}
 	svc, found, err := s.getServiceByIdentifer(sv.ServiceIdentifier)
 	if !found || err != nil {
@@ -123,7 +125,7 @@ func (s *ServiceRegistryService) createAPIService(r render.Render, sv common.Ser
 			DeveloperMessage: fmt.Sprintf("Cannot find service %s", sv.ServiceIdentifier),
 			UserMessage:      "Failed to find the service specified",
 		})
-		return
+		return http.StatusNotFound
 	}
 
 	svcv, found, err := linq.From(svc.ServiceVersions).FirstBy(func(x linq.T) (bool, error) {
@@ -134,12 +136,11 @@ func (s *ServiceRegistryService) createAPIService(r render.Render, sv common.Ser
 			DeveloperMessage: fmt.Sprintf("Cannot find service %s with version %s", sv.ServiceIdentifier, sv.Version),
 			UserMessage:      "Failed to find the service version specified",
 		})
-		return
+		return http.StatusNotFound
 	}
 	api.ServiceVersions = append(api.ServiceVersions, svcv.(*common.ServiceVersion))
 
 	defer func() {
-		fmt.Println("Publishing Event: SERVICE_ADDED")
 		s.eventChannel <- common.Event{
 			Action: "SERVICE_ADDED",
 			Data: map[string]string{
@@ -147,9 +148,11 @@ func (s *ServiceRegistryService) createAPIService(r render.Render, sv common.Ser
 			},
 		}
 	}()
+
+	return http.StatusOK
 }
 
-func (s *ServiceRegistryService) createAPIVersion(r render.Render, apiV common.APIVersion) {
+func (s *ServiceRegistryService) createAPIVersion(r render.Render, apiV common.APIVersion) int {
 	var _, found, err = s.getAPIByVersion(apiV.Version)
 
 	if found == true || err != nil {
@@ -158,7 +161,6 @@ func (s *ServiceRegistryService) createAPIVersion(r render.Render, apiV common.A
 			UserMessage:      "Failed to create new api version",
 		})
 	} else {
-		fmt.Println("Publishing Event: API_VERSION_ADD")
 		s.apiVersions = append(s.apiVersions, &apiV)
 		defer func() {
 			s.eventChannel <- common.Event{
@@ -169,13 +171,14 @@ func (s *ServiceRegistryService) createAPIVersion(r render.Render, apiV common.A
 			}
 		}()
 	}
+	return http.StatusOK
 }
 
 func (s *ServiceRegistryService) getServices(r render.Render, parms martini.Params) {
 	r.JSON(http.StatusOK, s.services)
 }
 
-func (s *ServiceRegistryService) createService(sd common.ServiceDefinition, r render.Render) {
+func (s *ServiceRegistryService) createService(sd common.ServiceDefinition, r render.Render) int {
 	byIdentifier := func(x linq.T) (bool, error) {
 		return x.(common.ServiceDefinition).Identifier == sd.Identifier, nil
 	}
@@ -189,6 +192,7 @@ func (s *ServiceRegistryService) createService(sd common.ServiceDefinition, r re
 		sd.ServiceVersions = []*common.ServiceVersion{}
 		s.services = append(s.services, &sd)
 	}
+	return http.StatusOK
 }
 
 func (s *ServiceRegistryService) dropService(r render.Render) {
@@ -223,14 +227,14 @@ func (s *ServiceRegistryService) getServiceHosts(r render.Render, parms martini.
 	r.JSON(http.StatusOK, svcv.(*common.ServiceVersion).ServiceHosts)
 }
 
-func (s *ServiceRegistryService) attachServiceHost(r render.Render, host common.ServiceHost, parms martini.Params) {
+func (s *ServiceRegistryService) attachServiceHost(r render.Render, host common.ServiceHost, parms martini.Params) int {
 	svc, found, err := s.getServiceByIdentifer(parms["service"])
 	if !found || err != nil {
 		r.JSON(http.StatusNotFound, common.APIError{
 			DeveloperMessage: fmt.Sprintf("Cannot find service %s", parms["service"]),
 			UserMessage:      "Failed to find the service specified",
 		})
-		return
+		return http.StatusNotFound
 	}
 
 	byVersion := func(x linq.T) (bool, error) {
@@ -242,7 +246,7 @@ func (s *ServiceRegistryService) attachServiceHost(r render.Render, host common.
 			DeveloperMessage: fmt.Sprintf("Cannot find service version %s", parms["version"]),
 			UserMessage:      "Failed to find the service version specified",
 		})
-		return
+		return http.StatusNotFound
 	}
 
 	svcv.(*common.ServiceVersion).ServiceHosts = append(svcv.(*common.ServiceVersion).ServiceHosts, host)
@@ -254,10 +258,8 @@ func (s *ServiceRegistryService) attachServiceHost(r render.Render, host common.
 		}
 		var changedAPI, f, err = linq.From(s.apiVersions).FirstBy(apiByVersion)
 		if err != nil && !f {
-			fmt.Println("Interrupting publish of HOST_ADD.")
 			return
 		}
-		fmt.Println("Publishing Event: HOST_ADD")
 		s.eventChannel <- common.Event{
 			Action: "HOST_ADD",
 			Data: map[string]string{
@@ -267,6 +269,8 @@ func (s *ServiceRegistryService) attachServiceHost(r render.Render, host common.
 			},
 		}
 	}()
+
+	return http.StatusOK
 }
 
 func (s *ServiceRegistryService) getAPIByVersion(version string) (*common.APIVersion, bool, error) {

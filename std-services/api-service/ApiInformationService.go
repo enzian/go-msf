@@ -6,6 +6,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"regexp"
+	"time"
 
 	"github.com/enzian/go-msf/common"
 )
@@ -87,6 +88,7 @@ func (apiSvc *APIInformationService) processEvent() {
 
 // ReqForwarder is the handle function that proxys request to instances in the service cloud according to the route table.
 func (apiSvc *APIInformationService) ReqForwarder(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
 	var routeRegex = regexp.MustCompile(`(?P<domain>.*)\/api\/v(?P<version>(\d*\.)*\d*)\/(?P<prefix>[^\/]*)\/(?P<suffix>.*)`)
 	var reqUrl = r.URL.String()
 	if routeRegex.MatchString(r.URL.String()) {
@@ -103,7 +105,8 @@ func (apiSvc *APIInformationService) ReqForwarder(w http.ResponseWriter, r *http
 			if len(routes) > 0 {
 				nodeUrl, err := url.ParseRequestURI(fmt.Sprintf("http://%s/%s", routes[0], result["suffix"]))
 				if err == nil {
-					fmt.Println(nodeUrl.String())
+					elapsed := time.Since(start)
+					fmt.Printf("It took %s to proxy %s\n", elapsed, reqUrl)
 					var client = httputil.NewSingleHostReverseProxy(nodeUrl)
 					client.ServeHTTP(w, r)
 					return

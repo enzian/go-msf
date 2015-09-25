@@ -9,9 +9,11 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/codegangsta/cli"
 	"github.com/enzian/go-msf/common"
+	"github.com/enzian/go-msf/common/clients"
 	"github.com/enzian/go-msf/std-services/api-service"
 	apiadapters "github.com/enzian/go-msf/std-services/api-service/Adapters"
 	"github.com/enzian/go-msf/std-services/registry-service"
@@ -79,6 +81,24 @@ func main() {
 			Usage:  "creates an instance of the api service.",
 			Action: startAPI,
 		},
+		{
+			Name:    "echo-service",
+			Aliases: []string{"echo"},
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "URI, u",
+					Value: "localhost:80",
+					Usage: "specify this parameter to override the endpoint the application will bind to.",
+				},
+				cli.StringFlag{
+					Name:  "service-directory, svr",
+					Value: "",
+					Usage: "specifies the service directorys URI",
+				},
+			},
+			Usage:  "creates a service that echos requests contents back to the client",
+			Action: startEchoService,
+		},
 	}
 	app.Run(os.Args)
 }
@@ -102,10 +122,11 @@ func startCompact(c *cli.Context) {
 	m.Action(dirSvc.Route().Handle)
 
 	http.HandleFunc("/service-directory/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.URL.String())
 		r.URL, _ = url.Parse(strings.TrimPrefix(r.URL.String(), "/service-directory"))
 		m.ServeHTTP(w, r)
 	})
-
+	fmt.Printf("listening at: %s \n", c.String("u"))
 	go http.ListenAndServe(c.String("u"), nil)
 
 	var initialLoader = apiadapters.NewInitialLoader(c.String("u") + "/service-directory")
@@ -160,5 +181,56 @@ func startDirectory(c *cli.Context) {
 		r.URL, _ = url.Parse(strings.TrimPrefix(r.URL.String(), "/service-directory"))
 		m.ServeHTTP(w, r)
 	})
+	log.Fatal(http.ListenAndServe(c.String("u"), nil))
+}
+
+func startEchoService(c *cli.Context) {
+	fmt.Println("Starting echo Service")
+
+	var client = clients.NewDirectoryClient(c.String("svr"))
+	var _, err = client.GetOrCreateServiceDefinition("md", "masterdata", "Master Data Service")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	_, err = client.GetOrCreateServiceVersion("md", "1.0")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	_, err = client.GetOrCreateApiVersion("0.1", "Lucky Lynx")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	err = client.GetOrCreateServiceVersionApi("0.1", "md", "1.0")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	_, err = client.AddServiceHost("md", "1.0", c.String("u"), "healthy")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		var content = make([]byte, r.ContentLength)
+		r.Body.Read(content)
+		defer r.Body.Close()
+		w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
+		w.WriteHeader(http.StatusOK)
+		w.Write(content)
+		elapsed := time.Since(start)
+		log.Printf("Looping through response took %s", elapsed)
+	})
+
+	fmt.Println("Starting Server")
+
 	log.Fatal(http.ListenAndServe(c.String("u"), nil))
 }
