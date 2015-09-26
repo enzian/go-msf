@@ -17,8 +17,8 @@ import (
 	"github.com/enzian/go-msf/std-services/api-service"
 	apiadapters "github.com/enzian/go-msf/std-services/api-service/Adapters"
 	"github.com/enzian/go-msf/std-services/registry-service"
-	"github.com/enzian/go-msf/vendor/github.com/martini-contrib/render"
 	"github.com/go-martini/martini"
+	"github.com/martini-contrib/render"
 )
 
 func main() {
