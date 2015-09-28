@@ -91,7 +91,7 @@ func main() {
 					Usage: "specify this parameter to override the endpoint the application will bind to.",
 				},
 				cli.StringFlag{
-					Name:  "service-directory, svr",
+					Name:  "service-directory, svd",
 					Value: "",
 					Usage: "specifies the service directorys URI",
 				},
@@ -187,14 +187,14 @@ func startDirectory(c *cli.Context) {
 func startEchoService(c *cli.Context) {
 	fmt.Println("Starting echo Service")
 
-	var client = clients.NewDirectoryClient(c.String("svr"))
-	var _, err = client.GetOrCreateServiceDefinition("md", "masterdata", "Master Data Service")
+	var client = clients.NewDirectoryClient(c.String("svd"))
+	var _, err = client.GetOrCreateServiceDefinition("echo", "echo", "Echo Test Service")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	_, err = client.GetOrCreateServiceVersion("md", "1.0")
+	_, err = client.GetOrCreateServiceVersion("echo", "1.0")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -206,13 +206,13 @@ func startEchoService(c *cli.Context) {
 		return
 	}
 
-	err = client.GetOrCreateServiceVersionApi("0.1", "md", "1.0")
+	err = client.GetOrCreateServiceVersionApi("0.1", "echo", "1.0")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	_, err = client.AddServiceHost("md", "1.0", c.String("u"), "healthy")
+	_, err = client.AddServiceHost("echo", "1.0", c.String("u"), "healthy")
 	if err != nil {
 		fmt.Println(err)
 		return

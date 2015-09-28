@@ -30,9 +30,9 @@ First we'll get the the `go-msf` sources from Github:
 ```
 $ go get https://github.com/enzian/go-msf
 ```
-After that you should see the sources located unter `GOROOT/src/github.com/enzian/go-msf/`
+After that you should see the sources located under `GOROOT/src/github.com/enzian/go-msf/`
 
-Secondly we need to get you dependencies into the source tree. `gvt` will get the dependencies which are specified in the `/vendor/manifest` file and load the into them `/vendor/` folder for your. It also strips all git (or other VCS) metadata so you do not have to worry about that.
+Secondly we need to get you dependencies into the source tree. `gvt` will get the dependencies which are specified in the `/vendor/manifest` file and load the into them `/vendor/` folder for you. It also strips all git (or other VCS) metadata so you do not have to worry about that.
 
 ```
 $ gvt rebuild
@@ -43,8 +43,10 @@ You are now ready to build the go-msf sources:
 GOPATH/src/github.com/enizan/go-msf$ go build
 ```
 
-This should produce a new executable in your source directory called `go-msf` or `go-msf` for the windows users in the world.
+This should produce a new executable in your source directory called `go-msf` or `go-msf.exe` for the windows users in the world.
 
 You can now start hosting the two core components of the microservice architecture. `go-msf` will help you with that! Just type `go-msf -help` and it will give you the options you have to host either the service-directory or the API servers. Use the provided parameters to link the services together when choosing to host them independently (which is something we seriously recommend for production environments!).
 
 You can also host the service directory and the API server in a single service instance by executing `./go-msf.exe compact`.
+
+Having completed these steps, proceed to the [Operations manual](Operations.md), to get more information on how to run and operate go-msf.
