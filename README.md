@@ -8,3 +8,7 @@ If you're new to `go-msf`, we recommend you read the [Getting Started Guide](doc
 
 * Service-Directory specs (docs pending)
 * API-Server specs (docs pending)
+
+### Builds
+
+Continuous Integration: ![alt text](https://travis-ci.org/enzian/go-msf.svg)
