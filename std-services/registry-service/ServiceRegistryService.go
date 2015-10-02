@@ -11,15 +11,15 @@ import (
 	"github.com/martini-contrib/render"
 )
 
-// ServiceRegistryService is the service stub for the service registry
-type ServiceRegistryService struct {
+// ServiceRegistryWebService is the service stub for the service registry
+type ServiceRegistryWebService struct {
 	apiVersions  []*common.APIVersion
 	services     []*common.ServiceDefinition
 	eventChannel chan<- common.Event
 }
 
 // Route return the route handler for this
-func (s ServiceRegistryService) Route() martini.Router {
+func (s ServiceRegistryWebService) Route() martini.Router {
 	r := martini.NewRouter()
 	r.Group("/apiversions/", func(r martini.Router) {
 		r.Get("", s.getAPIVersions)
@@ -52,15 +52,15 @@ func (s ServiceRegistryService) Route() martini.Router {
 }
 
 // NewServiceRegistryStub returns a new instance of service registry stub
-func NewServiceRegistryStub(eventChan chan<- common.Event) ServiceRegistryService {
-	return ServiceRegistryService{
+func NewServiceRegistryStub(eventChan chan<- common.Event) ServiceRegistryWebService {
+	return ServiceRegistryWebService{
 		apiVersions:  []*common.APIVersion{},
 		services:     []*common.ServiceDefinition{},
 		eventChannel: eventChan,
 	}
 }
 
-func (s *ServiceRegistryService) getServiceVersions(r render.Render, parms martini.Params) {
+func (s *ServiceRegistryWebService) getServiceVersions(r render.Render, parms martini.Params) {
 	svc, found, err := s.getServiceByIdentifer(parms["service"])
 	if !found || err != nil {
 		r.JSON(http.StatusNotFound, common.APIError{
@@ -72,7 +72,7 @@ func (s *ServiceRegistryService) getServiceVersions(r render.Render, parms marti
 	r.JSON(http.StatusOK, svc.ServiceVersions)
 }
 
-func (s *ServiceRegistryService) createServiceVersion(r render.Render, sv common.ServiceVersion, parms martini.Params) int {
+func (s *ServiceRegistryWebService) createServiceVersion(r render.Render, sv common.ServiceVersion, parms martini.Params) int {
 	svc, found, err := s.getServiceByIdentifer(parms["service"])
 	if !found || err != nil {
 		r.JSON(http.StatusNotFound, common.APIError{
@@ -90,15 +90,15 @@ func (s *ServiceRegistryService) createServiceVersion(r render.Render, sv common
 	return http.StatusOK
 }
 
-func (s *ServiceRegistryService) getAPIVersion(r render.Render, parms martini.Params) {
+func (s *ServiceRegistryWebService) getAPIVersion(r render.Render, parms martini.Params) {
 	r.JSON(http.StatusOK, []common.APIVersion{})
 }
 
-func (s *ServiceRegistryService) getAPIVersions(r render.Render) {
+func (s *ServiceRegistryWebService) getAPIVersions(r render.Render) {
 	r.JSON(http.StatusOK, s.apiVersions)
 }
 
-func (s *ServiceRegistryService) getAPIServices(r render.Render, parms martini.Params) {
+func (s *ServiceRegistryWebService) getAPIServices(r render.Render, parms martini.Params) {
 	var api, found, err = s.getAPIByVersion(parms["version"])
 	if !found || err != nil {
 		r.JSON(http.StatusNotFound, common.APIError{
@@ -110,7 +110,7 @@ func (s *ServiceRegistryService) getAPIServices(r render.Render, parms martini.P
 	}
 }
 
-func (s *ServiceRegistryService) createAPIService(r render.Render, sv common.ServiceVersion, parms martini.Params) int {
+func (s *ServiceRegistryWebService) createAPIService(r render.Render, sv common.ServiceVersion, parms martini.Params) int {
 	var api, found, err = s.getAPIByVersion(parms["version"])
 	if !found || err != nil {
 		r.JSON(http.StatusNotFound, common.APIError{
@@ -152,7 +152,7 @@ func (s *ServiceRegistryService) createAPIService(r render.Render, sv common.Ser
 	return http.StatusOK
 }
 
-func (s *ServiceRegistryService) createAPIVersion(r render.Render, apiV common.APIVersion) int {
+func (s *ServiceRegistryWebService) createAPIVersion(r render.Render, apiV common.APIVersion) int {
 	var _, found, err = s.getAPIByVersion(apiV.Version)
 
 	if found == true || err != nil {
@@ -174,11 +174,11 @@ func (s *ServiceRegistryService) createAPIVersion(r render.Render, apiV common.A
 	return http.StatusOK
 }
 
-func (s *ServiceRegistryService) getServices(r render.Render, parms martini.Params) {
+func (s *ServiceRegistryWebService) getServices(r render.Render, parms martini.Params) {
 	r.JSON(http.StatusOK, s.services)
 }
 
-func (s *ServiceRegistryService) createService(sd common.ServiceDefinition, r render.Render) int {
+func (s *ServiceRegistryWebService) createService(sd common.ServiceDefinition, r render.Render) int {
 	byIdentifier := func(x linq.T) (bool, error) {
 		return x.(common.ServiceDefinition).Identifier == sd.Identifier, nil
 	}
@@ -195,14 +195,14 @@ func (s *ServiceRegistryService) createService(sd common.ServiceDefinition, r re
 	return http.StatusOK
 }
 
-func (s *ServiceRegistryService) dropService(r render.Render) {
+func (s *ServiceRegistryWebService) dropService(r render.Render) {
 	r.JSON(http.StatusNotAcceptable, common.APIError{
 		DeveloperMessage: "Attempt to delete a service definition denied.",
 		UserMessage:      "Action not allowed",
 	})
 }
 
-func (s *ServiceRegistryService) getServiceHosts(r render.Render, parms martini.Params) {
+func (s *ServiceRegistryWebService) getServiceHosts(r render.Render, parms martini.Params) {
 	svc, found, err := s.getServiceByIdentifer(parms["service"])
 	if !found || err != nil {
 		r.JSON(http.StatusNotFound, common.APIError{
@@ -227,7 +227,7 @@ func (s *ServiceRegistryService) getServiceHosts(r render.Render, parms martini.
 	r.JSON(http.StatusOK, svcv.(*common.ServiceVersion).ServiceHosts)
 }
 
-func (s *ServiceRegistryService) attachServiceHost(r render.Render, host common.ServiceHost, parms martini.Params) int {
+func (s *ServiceRegistryWebService) attachServiceHost(r render.Render, host common.ServiceHost, parms martini.Params) int {
 	svc, found, err := s.getServiceByIdentifer(parms["service"])
 	if !found || err != nil {
 		r.JSON(http.StatusNotFound, common.APIError{
@@ -273,7 +273,7 @@ func (s *ServiceRegistryService) attachServiceHost(r render.Render, host common.
 	return http.StatusOK
 }
 
-func (s *ServiceRegistryService) getAPIByVersion(version string) (*common.APIVersion, bool, error) {
+func (s *ServiceRegistryWebService) getAPIByVersion(version string) (*common.APIVersion, bool, error) {
 	byVersion := func(x linq.T) (bool, error) {
 		return x.(*common.APIVersion).Version == version, nil
 	}
@@ -284,7 +284,7 @@ func (s *ServiceRegistryService) getAPIByVersion(version string) (*common.APIVer
 	return x.(*common.APIVersion), found, err
 }
 
-func (s *ServiceRegistryService) getServiceByIdentifer(identifier string) (*common.ServiceDefinition, bool, error) {
+func (s *ServiceRegistryWebService) getServiceByIdentifer(identifier string) (*common.ServiceDefinition, bool, error) {
 	byIdentifier := func(x linq.T) (bool, error) {
 		return x.(*common.ServiceDefinition).Identifier == identifier, nil
 	}
