@@ -22,5 +22,5 @@ type IApiRegistry interface {
 // IHostRegistry abstracts the management of hosts for given services and versions
 type IHostRegistry interface {
 	AddHost(serviceBaseURI string, serviceIdentifier string, serviceVersion string, state string) (ServiceHost, error)
-	SetHostState(hostID string, state string)
+	SetHostState(hostID string, state string) error
 }
