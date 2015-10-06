@@ -8,8 +8,8 @@ type GenericAPIVersionRegistry struct {
 }
 
 // CreateAPIVersion create a new API version in the directory
-func (gap GenericAPIVersionRegistry) CreateAPIVersion(version string, displayName string) (common.ServiceDefinition, error) {
-	return common.ServiceDefinition{}, nil
+func (gap GenericAPIVersionRegistry) CreateAPIVersion(version string, displayName string) (*common.ServiceDefinition, error) {
+	return &common.ServiceDefinition{}, nil
 }
 
 // LinkServiceVersion links an existing service version to a given (also existing) api version

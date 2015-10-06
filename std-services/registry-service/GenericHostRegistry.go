@@ -7,9 +7,12 @@ type GenericHostRegistry struct {
 	hosts []common.ServiceHost
 }
 
-func (ghr GenericHostRegistry) AddHost(serviceBaseURI string, serviceIdentifier string, serviceVersion string, state string) (common.ServiceHost, error) {
-	return common.ServiceHost{}, nil
+// AddHost adds a host to a given service version
+func (ghr GenericHostRegistry) AddHost(serviceBaseURI string, serviceIdentifier string, serviceVersion string, state string) (*common.ServiceHost, error) {
+	return &common.ServiceHost{}, nil
 }
+
+// SetHostState sets the state change of a host
 func (ghr GenericHostRegistry) SetHostState(hostID string, state string) error {
 	return nil
 }

@@ -9,18 +9,18 @@ type ServiceStub interface {
 
 // IServiceRegistry abstracts the management of service definitions and versions
 type IServiceRegistry interface {
-	CreateServiceDefinition(identifierCode string, uriPrefix string, displayName string) (ServiceDefinition, error)
-	CreateServiceVersion(identifierCode string, version string) (ServiceVersion, error)
+	CreateServiceDefinition(identifierCode string, uriPrefix string, displayName string) (*ServiceDefinition, error)
+	CreateServiceVersion(identifierCode string, version string) (*ServiceVersion, error)
 }
 
 // IApiRegistry abstracts the management of api revisions
 type IApiRegistry interface {
-	CreateApiVersion(version string, displayName string) (ServiceDefinition, error)
+	CreateApiVersion(version string, displayName string) (*ServiceDefinition, error)
 	LinkServiceVersion(apiVersion string, serviceIdentifier string, serviceVersion string) error
 }
 
 // IHostRegistry abstracts the management of hosts for given services and versions
 type IHostRegistry interface {
-	AddHost(serviceBaseURI string, serviceIdentifier string, serviceVersion string, state string) (ServiceHost, error)
+	AddHost(serviceBaseURI string, serviceIdentifier string, serviceVersion string, state string) (*ServiceHost, error)
 	SetHostState(hostID string, state string) error
 }
