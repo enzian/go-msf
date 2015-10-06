@@ -2,18 +2,18 @@ package common
 
 // ServiceDefinition defines a services independant of it's version
 type ServiceDefinition struct {
-	HeadVersion     string            `json:"headversion,omitempty"`
-	Identifier      string            `json:"identifier"`
-	DisplayName     string            `json:"displayname"`
-	URIPrefix       string            `json:"uriprefix"`
-	ServiceVersions []*ServiceVersion `json:"versions"`
+	HeadVersion     string           `json:"headversion,omitempty"`
+	Identifier      string           `json:"identifier"`
+	DisplayName     string           `json:"displayname"`
+	URIPrefix       string           `json:"uriprefix"`
+	ServiceVersions []ServiceVersion `json:"versions"`
 }
 
 // APIVersion defines a revision of the entire API
 type APIVersion struct {
-	Version         string            `json:"version,omitempty"`
-	Name            string            `json:"name,omitempty"`
-	ServiceVersions []*ServiceVersion `json:"versions"`
+	Version         string           `json:"version,omitempty"`
+	Name            string           `json:"name,omitempty"`
+	ServiceVersions []ServiceVersion `json:"versions"`
 }
 
 // ServiceVersion defines the link between multiple versions of a service and the hosts that expose those services
